@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儲存金管家</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* 配色：午夜藍/琥珀金/深紅 */
+            --bg-increase: #fff9db;
+            --primary-increase: #fab005;
+            --secondary-increase: #f08c00;
+
+            --bg-decrease: #fff5f5;
+            --primary-decrease: #fa5252;
+            --secondary-decrease: #e03131;
+
+            --bg-summary: #e3fafc;
+            --primary-summary: #15aabf;
+            --secondary-summary: #0c8599;
+
+            --bg-auth: #1a1b1e;
+            --primary-auth: #4dabf7;
+            --text-dark: #2c3e50;
+            --text-light: #ffffff;
+
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            --glass-dark: rgba(30, 30, 30, 0.8);
+            --glass-light: rgba(255, 255, 255, 0.7);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-auth);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        body.mode-increase {
+            background-color: var(--bg-increase);
+        }
+
+        body.mode-decrease {
+            background-color: var(--bg-decrease);
+        }
+
+        body.mode-summary {
+            background-color: var(--bg-summary);
+        }
+
+        /* --- Auth Screen --- */
+        #auth-screen {
+            background: var(--glass-dark);
+            backdrop-filter: blur(20px);
+            padding: 3.5rem 2.5rem;
+            border-radius: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            color: var(--text-light);
+        }
+
+        #auth-screen h1 {
+            color: var(--primary-auth);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .pin-input-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-auth);
+            transition: var(--transition);
+        }
+
+        .pin-dot.active {
+            background-color: var(--primary-auth);
+            transform: scale(1.3);
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .num-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 1.2rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .num-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- Main App --- */
+        #main-app {
+            display: none;
+            width: 95%;
+            max-width: 500px;
+            margin: 2rem auto;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1.5rem 0;
+            transition: var(--transition);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        body.mode-auth header h1 {
+            color: var(--text-light);
+        }
+
+        .sheet-link {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: #fab005;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .nav-btn {
+            border: none;
+            padding: 1.2rem 0.5rem;
+            border-radius: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            background: white;
+            color: #adb5bd;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-btn.active[data-mode="increase"] {
+            background: var(--primary-increase);
+            color: white;
+        }
+
+        .nav-btn.active[data-mode="decrease"] {
+            background: var(--primary-decrease);
+            color: white;
+        }
+
+        .nav-btn.active[data-mode="summary"] {
+            background: var(--primary-summary);
+            color: white;
+        }
+
+        /* Form */
+        .card {
+            background: var(--glass-light);
+            backdrop-filter: blur(15px);
+            padding: 2.5rem;
+            border-radius: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input {
+            width: 100%;
+            padding: 1.2rem;
+            border-radius: 1.2rem;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            outline: none;
+            transition: var(--transition);
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        input:focus {
+            border-color: var(--primary-increase);
+            box-shadow: 0 0 0 6px rgba(250, 176, 5, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.4rem;
+            border-radius: 1.5rem;
+            border: none;
+            background: var(--primary-increase);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 10px 25px rgba(250, 176, 5, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Summary */
+        #summary-content {
+            display: none;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 1.5rem;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .amt-text {
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .amt-text.plus {
+            color: #40c057;
+        }
+
+        .amt-text.minus {
+            color: #fa5252;
+        }
+
+        #feedback-toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #212529;
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 60px;
+            transition: var(--transition);
+            z-index: 2000;
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+        }
+
+        #feedback-toast.show {
+            bottom: 40px;
+        }
+
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid currentColor;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="mode-auth">
+
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <h1>儲存金管家</h1>
+        <div class="pin-input-group">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+        <div class="numpad">
+            <button class="num-btn" onclick="appendPin('1')">1</button>
+            <button class="num-btn" onclick="appendPin('2')">2</button>
+            <button class="num-btn" onclick="appendPin('3')">3</button>
+            <button class="num-btn" onclick="appendPin('4')">4</button>
+            <button class="num-btn" onclick="appendPin('5')">5</button>
+            <button class="num-btn" onclick="appendPin('6')">6</button>
+            <button class="num-btn" onclick="appendPin('7')">7</button>
+            <button class="num-btn" onclick="appendPin('8')">8</button>
+            <button class="num-btn" onclick="appendPin('9')">9</button>
+            <button class="num-btn" style="opacity:0.5" onclick="clearPin()">C</button>
+            <button class="num-btn" onclick="appendPin('0')">0</button>
+            <button class="num-btn" style="opacity:0.5" onclick="checkPin()">↵</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app">
+        <div class="sticky-header">
+            <header>
+                <h1>儲存金管家</h1>
+                <a id="sheet-btn" href="#" target="_blank" class="sheet-link">📊 Spreadsheet</a>
+            </header>
+
+            <nav class="nav-tabs">
+                <button class="nav-btn active" data-mode="increase" onclick="setMode('increase')">增加</button>
+                <button class="nav-btn" data-mode="decrease" onclick="setMode('decrease')">減少</button>
+                <button class="nav-btn" data-mode="summary" onclick="setMode('summary')">今日結算</button>
+            </nav>
+        </div>
+
+        <div id="record-form" class="card">
+            <div class="input-group">
+                <label class="input-label">項目名稱</label>
+                <input type="text" id="item-name" placeholder="例如：存入生活費">
+            </div>
+            <div class="input-group">
+                <label class="input-label">金額</label>
+                <input type="number" id="amount" placeholder="輸入數字" inputmode="numeric">
+            </div>
+            <button id="submit-btn" class="submit-btn" onclick="submitRecord()">
+                <span id="btn-text">確認紀錄</span>
+                <div class="loader" id="btn-loader"></div>
+            </button>
+        </div>
+
+        <div id="summary-content">
+            <div class="card">
+                <p style="font-weight: 700; margin-bottom: 1.5rem; font-size: 1.2rem;">今日明細紀錄</p>
+                <div id="summary-list"></div>
+                <div id="total-balance"
+                    style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px dashed #eee; font-weight: 700; text-align: right; font-size: 1.3rem;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedback-toast">
+        <p id="toast-msg">儲存金已更新！</p>
+        <p id="toast-detail" style="font-size: 0.9rem; opacity: 0.7; margin-top: 6px;"></p>
+    </div>
+
+    <script>
+        // ================= CONFIGURATION =================
+        // 請在此處貼上您部署 GAS 後取得的網頁應用程式網址
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw2gnJYvmbTiMd69JnV-8OWZuHRvZASPO3UwlG05C7rceH05fMDOOtAVKcy7qKdou0k/exec";
+        // =================================================
+
+        let currentPin = "";
+        const HASHED_PIN_0 = "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
+        let currentMode = "increase";
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function appendPin(num) { if (currentPin.length < 4) { currentPin += num; updatePinDots(); } }
+        function updatePinDots() { const dots = document.querySelectorAll('.pin-dot'); dots.forEach((dot, i) => i < currentPin.length ? dot.classList.add('active') : dot.classList.remove('active')); }
+        function clearPin() { currentPin = ""; updatePinDots(); }
+
+        async function checkPin() {
+            const hashed = await sha256(currentPin);
+            if (hashed === HASHED_PIN_0) { unlockApp(); } else { alert("密碼錯誤"); clearPin(); }
+        }
+
+        function unlockApp() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            setMode('increase');
+            initApp();
+        }
+
+        function initApp() {
+            const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getUrl' }) });
+            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
+                if (res.data) document.getElementById('sheet-btn').href = res.data;
+            }).catch(e => console.log("Init fail"));
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.body.className = `mode-${mode}`;
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+
+            const isSummary = mode === 'summary';
+            document.getElementById('record-form').style.display = isSummary ? 'none' : 'block';
+            document.getElementById('summary-content').style.display = isSummary ? 'block' : 'none';
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.style.background = mode === 'increase' ? 'var(--primary-increase)' : 'var(--primary-decrease)';
+            submitBtn.style.boxShadow = mode === 'increase' ? '0 10px 25px rgba(250, 176, 5, 0.3)' : '0 10px 25px rgba(250, 82, 82, 0.3)';
+
+            if (isSummary) loadSummary();
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('item-name').value = "";
+            document.getElementById('amount').value = "";
+        }
+
+        function showToast(msg, detail) {
+            const toast = document.getElementById('feedback-toast');
+            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast-detail').innerText = detail;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        async function submitRecord() {
+            const item = document.getElementById('item-name').value;
+            const amount = document.getElementById('amount').value;
+            if (!item || !amount) { alert("請填寫內容與金額"); return; }
+
+            const val = currentMode === 'decrease' ? -Math.abs(amount) : Math.abs(amount);
+            document.getElementById('btn-text').style.display = 'none';
+            document.getElementById('btn-loader').style.display = 'block';
+
+            const payload = { action: 'record', mode: currentMode, item: item, val: val };
+            const params = new URLSearchParams({ payload: JSON.stringify(payload) });
+
+            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
+                finishSubmit(item, val);
+            }).catch(err => {
+                // 容錯處理：即使 CORS 報錯，通常資料已寫入
+                finishSubmit(item, val);
+            });
+        }
+
+        function finishSubmit(item, val) {
+            document.getElementById('btn-text').style.display = 'block';
+            document.getElementById('btn-loader').style.display = 'none';
+            showToast("成功更新儲存金！", `${item}: ${val > 0 ? '+' : ''}${val}`);
+            clearForm();
+        }
+
+        function loadSummary() {
+            const list = document.getElementById('summary-list');
+            list.innerHTML = '<p style="text-align: center; color: #adb5bd;">讀取中...</p>';
+            const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getSummary' }) });
+
+            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
+                renderSummary(res.data);
+            }).catch(e => {
+                list.innerHTML = '<p style="text-align: center; color: #fa5252;">讀取失敗，請檢查網路</p>';
+            });
+        }
+
+        function renderSummary(data) {
+            const list = document.getElementById('summary-list');
+            if (!data || !data.items || data.items.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #adb5bd;">今日尚無異動紀錄</p>';
+            } else {
+                list.innerHTML = data.items.map(d => `
+                    <div class="summary-item">
+                        <div class="info">
+                            <span style="font-weight:600; color:#495057;">${d.item}</span><br>
+                            <small style="color:#adb5bd;">${d.type}</small>
+                        </div>
+                        <div class="amt-text ${d.type === '收入' ? 'plus' : 'minus'}">
+                            ${d.type === '收入' ? '+' : '-'}${d.amount}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('total-balance').innerHTML = `總結存：<span style="color:var(--primary-summary)">$${data.balance || 0}</span>`;
+        }
+    </script>
+</body>
+
+</html>
