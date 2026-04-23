@@ -10,28 +10,28 @@
         rel="stylesheet">
     <style>
         :root {
-            /* 配色：午夜藍/琥珀金/深紅 */
-            --bg-increase: #fff9db;
-            --primary-increase: #fab005;
-            --secondary-increase: #f08c00;
-
+            /* 配色：方案三：高級灰/丁香紫 (Elegant Lavender) */
+            --bg-increase: #f3f0ff;
+            --primary-increase: #a29bfe;
+            --secondary-increase: #6c5ce7;
+            
             --bg-decrease: #fff5f5;
-            --primary-decrease: #fa5252;
-            --secondary-decrease: #e03131;
-
-            --bg-summary: #e3fafc;
-            --primary-summary: #15aabf;
-            --secondary-summary: #0c8599;
-
-            --bg-auth: #1a1b1e;
-            --primary-auth: #4dabf7;
-            --text-dark: #2c3e50;
+            --primary-decrease: #ff7675;
+            --secondary-decrease: #d63031;
+            
+            --bg-summary: #fff9db;
+            --primary-summary: #fdcb6e;
+            --secondary-summary: #e1b12c;
+            
+            --bg-auth: #f0f0f0;
+            --primary-auth: #6c5ce7;
+            --text-dark: #2d3436;
             --text-light: #ffffff;
 
             --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            --glass-dark: rgba(30, 30, 30, 0.8);
+            --glass-dark: rgba(255, 255, 255, 0.8); /* 淺色玻璃 */
             --glass-light: rgba(255, 255, 255, 0.7);
-            --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -70,11 +70,11 @@
             backdrop-filter: blur(20px);
             padding: 3.5rem 2.5rem;
             border-radius: 2.5rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
             text-align: center;
             width: 90%;
             max-width: 400px;
-            color: var(--text-light);
+            color: var(--text-dark);
         }
 
         #auth-screen h1 {
@@ -112,15 +112,16 @@
         }
 
         .num-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: white;
+            border: 1px solid #eee;
             padding: 1.5rem;
             border-radius: 1.2rem;
             font-size: 1.5rem;
             font-weight: 600;
-            color: white;
+            color: var(--text-dark);
             cursor: pointer;
             transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
 
         .num-btn:active {
@@ -394,8 +395,8 @@
 
         <div id="record-form" class="card">
             <div class="input-group">
-                <label class="input-label">項目名稱</label>
-                <input type="text" id="item-name" placeholder="例如：存入生活費">
+                <label class="input-label">項目</label>
+                <input type="text" id="item-name" placeholder="輸入項目">
             </div>
             <div class="input-group">
                 <label class="input-label">金額</label>
