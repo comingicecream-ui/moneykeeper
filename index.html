@@ -450,6 +450,24 @@
             if (hashed === HASHED_PIN_0) { unlockApp(); } else { alert("密碼錯誤"); clearPin(); }
         }
 
+        // 鍵盤支援 (電腦版專用)
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('auth-screen').style.display === 'none') return;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                appendPin(e.key);
+            } else if (e.key === 'Enter') {
+                checkPin();
+            } else if (e.key === 'Backspace') {
+                if (currentPin.length > 0) {
+                    currentPin = currentPin.slice(0, -1);
+                    updatePinDots();
+                }
+            } else if (e.key === 'Escape' || e.key.toLowerCase() === 'c') {
+                clearPin();
+            }
+        });
+
         function unlockApp() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
