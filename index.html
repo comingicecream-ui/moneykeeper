@@ -10,26 +10,33 @@
         rel="stylesheet">
     <style>
         :root {
-            /* 配色：方案三：高級灰/丁香紫 (Elegant Lavender) */
-            --bg-increase: #f3f0ff;
-            --primary-increase: #a29bfe;
-            --secondary-increase: #6c5ce7;
+            /* 儲存金管家 (Savings) */
+            --color-savings-inc: #ff922b; /* Orange */
+            --bg-savings-inc: #fff4e6;
             
-            --bg-decrease: #fff5f5;
-            --primary-decrease: #ff7675;
-            --secondary-decrease: #d63031;
+            --color-savings-dec: #fa5252; /* Red */
+            --bg-savings-dec: #fff5f5;
             
-            --bg-summary: #fff9db;
-            --primary-summary: #fdcb6e;
-            --secondary-summary: #e1b12c;
+            --color-savings-sum: #fcc419; /* Yellow */
+            --bg-savings-sum: #fff9db;
             
-            --bg-auth: #f0f0f0;
-            --primary-auth: #6c5ce7;
+            /* 今天開始記帳吧 (Accounting) */
+            --color-acc-inc: #40c057; /* Green */
+            --bg-acc-inc: #ebfbee;
+            
+            --color-acc-dec: #339af0; /* Blue */
+            --bg-acc-dec: #e7f5ff;
+            
+            --color-acc-sum: #7950f2; /* Purple */
+            --bg-acc-sum: #f3f0ff;
+            
+            --bg-auth: #f8f9fa;
+            --primary-auth: #495057;
             --text-dark: #2d3436;
             --text-light: #ffffff;
 
             --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            --glass-dark: rgba(255, 255, 255, 0.8); /* 淺色玻璃 */
+            --glass-dark: rgba(255, 255, 255, 0.85);
             --glass-light: rgba(255, 255, 255, 0.7);
             --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
         }
@@ -52,17 +59,13 @@
             overflow-x: hidden;
         }
 
-        body.mode-increase {
-            background-color: var(--bg-increase);
-        }
-
-        body.mode-decrease {
-            background-color: var(--bg-decrease);
-        }
-
-        body.mode-summary {
-            background-color: var(--bg-summary);
-        }
+        /* 主題顏色應用 */
+        body.mode-savings-increase { background-color: var(--bg-savings-inc); }
+        body.mode-savings-decrease { background-color: var(--bg-savings-dec); }
+        body.mode-savings-summary  { background-color: var(--bg-savings-sum); }
+        body.mode-acc-income       { background-color: var(--bg-acc-inc); }
+        body.mode-acc-expense      { background-color: var(--bg-acc-dec); }
+        body.mode-acc-summary      { background-color: var(--bg-acc-sum); }
 
         /* --- Auth Screen --- */
         #auth-screen {
@@ -349,6 +352,19 @@
             }
         }
 
+        .sys-btn {
+            background: white; border: none; padding: 6px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; color: #adb5bd; cursor: pointer; transition: var(--transition);
+        }
+        .sys-btn.active { background: #495057; color: white; }
+
+        .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
+        .cat-btn {
+            background: white; border: 2px solid #f1f3f5; padding: 10px 5px; border-radius: 12px;
+            font-size: 0.85rem; font-weight: 600; color: #495057; cursor: pointer; transition: var(--transition);
+        }
+        .cat-btn.selected { border-color: currentColor; background: #f8f9fa; transform: scale(1.05); font-weight: 800; }
+
         .action-btn {
             width: 100%;
             padding: 1.2rem;
@@ -418,18 +434,47 @@
     <div id="main-app">
         <div class="sticky-header">
             <header>
-                <h1>儲存金管家</h1>
-                <a id="sheet-btn" href="#" target="_blank" class="sheet-link">📊 Spreadsheet</a>
+                <div style="display: flex; flex-direction: column;">
+                    <h1 id="app-title" style="font-size: 1.5rem;">儲存金管家</h1>
+                    <div id="system-selector" style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button class="sys-btn active" id="sys-savings" onclick="switchSystem('savings')">儲存金</button>
+                        <button class="sys-btn" id="sys-acc" onclick="switchSystem('acc')">每日記帳</button>
+                    </div>
+                </div>
+                <a id="sheet-btn" href="#" target="_blank" class="sheet-link">📊 Sheet</a>
             </header>
 
-            <nav class="nav-tabs">
+            <nav id="nav-savings" class="nav-tabs">
                 <button class="nav-btn active" data-mode="increase" onclick="setMode('increase')">增加</button>
                 <button class="nav-btn" data-mode="decrease" onclick="setMode('decrease')">減少</button>
+                <button class="nav-btn" data-mode="summary" onclick="setMode('summary')">今日結算</button>
+            </nav>
+            <nav id="nav-acc" class="nav-tabs" style="display: none;">
+                <button class="nav-btn" data-mode="expense" onclick="setMode('expense')">支出</button>
+                <button class="nav-btn" data-mode="income" onclick="setMode('income')">收入</button>
                 <button class="nav-btn" data-mode="summary" onclick="setMode('summary')">今日結算</button>
             </nav>
         </div>
 
         <div id="record-form" class="card">
+            <!-- 記帳專用類別選擇 -->
+            <div id="acc-categories" style="display: none; margin-bottom: 1.5rem;">
+                <p style="font-weight: 700; margin-bottom: 1rem; font-size: 0.9rem; color: #868e96;">選擇類別</p>
+                <div id="cat-grid-expense" class="cat-grid">
+                    <button class="cat-btn" onclick="selectCat('飲食', this)">飲食</button>
+                    <button class="cat-btn" onclick="selectCat('交通', this)">交通</button>
+                    <button class="cat-btn" onclick="selectCat('娛樂', this)">娛樂</button>
+                    <button class="cat-btn" onclick="selectCat('月費', this)">月費</button>
+                    <button class="cat-btn" onclick="selectCat('其他', this)">其他</button>
+                </div>
+                <div id="cat-grid-income" class="cat-grid" style="display: none;">
+                    <button class="cat-btn" onclick="selectCat('薪資', this)">薪資</button>
+                    <button class="cat-btn" onclick="selectCat('投資', this)">投資</button>
+                    <button class="cat-btn" onclick="selectCat('其他', this)">其他</button>
+                </div>
+                <input type="text" id="custom-cat" placeholder="或是自填類別..." style="margin-top: 10px; padding: 0.8rem; font-size: 0.9rem;">
+            </div>
+
             <div class="input-group">
                 <label class="input-label">項目</label>
                 <input type="text" id="item-name" placeholder="輸入項目">
@@ -477,13 +522,17 @@
 
     <script>
         // ================= CONFIGURATION =================
-        // 請在此處貼上您部署 GAS 後取得的網頁應用程式網址
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbw2gnJYvmbTiMd69JnV-8OWZuHRvZASPO3UwlG05C7rceH05fMDOOtAVKcy7qKdou0k/exec";
+        const URLS = {
+            savings: "https://script.google.com/macros/s/AKfycbw2gnJYvmbTiMd69JnV-8OWZuHRvZASPO3UwlG05C7rceH05fMDOOtAVKcy7qKdou0k/exec",
+            acc: "https://script.google.com/macros/s/AKfycbxYgyXd9qQ_D0B3nNeqPbs9eykQLzVtbGDDm3130Ly0IZn_SbiCNWyZv3Dc7azBkaeF/exec"
+        };
         // =================================================
 
         let currentPin = "";
         const HASHED_PIN_0 = "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9";
+        let currentSystem = "savings";
         let currentMode = "increase";
+        let selectedCategory = "";
 
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
@@ -501,58 +550,92 @@
             if (hashed === HASHED_PIN_0) { unlockApp(); } else { alert("密碼錯誤"); clearPin(); }
         }
 
-        // 鍵盤支援 (電腦版專用)
-        window.addEventListener('keydown', (e) => {
-            if (document.getElementById('auth-screen').style.display === 'none') return;
-            
-            if (e.key >= '0' && e.key <= '9') {
-                appendPin(e.key);
-            } else if (e.key === 'Enter') {
-                checkPin();
-            } else if (e.key === 'Backspace') {
-                if (currentPin.length > 0) {
-                    currentPin = currentPin.slice(0, -1);
-                    updatePinDots();
-                }
-            } else if (e.key === 'Escape' || e.key.toLowerCase() === 'c') {
-                clearPin();
-            }
-        });
-
         function unlockApp() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            setMode('increase');
+            switchSystem('savings');
             initApp();
         }
 
         function initApp() {
-            const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getUrl' }) });
-            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
-                if (res.data) document.getElementById('sheet-btn').href = res.data;
-            }).catch(e => console.log("Init fail"));
+            Object.keys(URLS).forEach(sys => {
+                const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getUrl' }) });
+                fetch(`${URLS[sys]}?${params.toString()}`).then(r => r.json()).then(res => {
+                    if (sys === currentSystem && res.data) document.getElementById('sheet-btn').href = res.data;
+                });
+            });
+        }
+
+        function switchSystem(sys) {
+            currentSystem = sys;
+            document.getElementById('app-title').innerText = sys === 'savings' ? '儲存金管家' : '今天開始記帳吧';
+            document.getElementById('sys-savings').classList.toggle('active', sys === 'savings');
+            document.getElementById('sys-acc').classList.toggle('active', sys === 'acc');
+            
+            document.getElementById('nav-savings').style.display = sys === 'savings' ? 'grid' : 'none';
+            document.getElementById('nav-acc').style.display = sys === 'acc' ? 'grid' : 'none';
+            
+            document.getElementById('acc-categories').style.display = sys === 'acc' ? 'block' : 'none';
+            
+            setMode(sys === 'savings' ? 'increase' : 'expense');
         }
 
         function setMode(mode) {
             currentMode = mode;
-            document.body.className = `mode-${mode}`;
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+            
+            // 決定頁面 Class (控制背景色)
+            let bodyClass = "";
+            if (currentSystem === 'savings') {
+                bodyClass = `mode-savings-${mode}`;
+            } else {
+                bodyClass = `mode-acc-${mode}`;
+            }
+            document.body.className = bodyClass;
+
+            // 取得對應的主題色
+            const themeColor = getComputedStyle(document.documentElement).getPropertyValue(`--color-${currentSystem === 'savings' ? 'savings' : 'acc'}-${mode.slice(0,3)}`).trim();
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+                if (btn.classList.contains('active')) {
+                    btn.style.background = themeColor;
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.color = '#adb5bd';
+                }
+            });
 
             const isSummary = mode === 'summary';
             document.getElementById('record-form').style.display = isSummary ? 'none' : 'block';
             document.getElementById('summary-content').style.display = isSummary ? 'block' : 'none';
 
+            if (currentSystem === 'acc') {
+                document.getElementById('cat-grid-expense').style.display = mode === 'expense' ? 'grid' : 'none';
+                document.getElementById('cat-grid-income').style.display = mode === 'income' ? 'grid' : 'none';
+            }
+
             const submitBtn = document.getElementById('submit-btn');
-            submitBtn.style.background = mode === 'increase' ? 'var(--primary-increase)' : 'var(--primary-decrease)';
-            submitBtn.style.boxShadow = mode === 'increase' ? '0 10px 25px rgba(250, 176, 5, 0.3)' : '0 10px 25px rgba(250, 82, 82, 0.3)';
+            submitBtn.style.background = themeColor;
+            submitBtn.style.boxShadow = `0 10px 25px ${themeColor}4D`;
 
             if (isSummary) loadSummary();
             clearForm();
         }
 
+        function selectCat(cat, btn) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('custom-cat').value = "";
+        }
+
         function clearForm() {
             document.getElementById('item-name').value = "";
             document.getElementById('amount').value = "";
+            document.getElementById('custom-cat').value = "";
+            selectedCategory = "";
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
         }
 
         function showToast(msg, detail) {
@@ -566,27 +649,39 @@
         async function submitRecord() {
             const item = document.getElementById('item-name').value;
             const amount = document.getElementById('amount').value;
-            if (!item || !amount) { alert("請填寫內容與金額"); return; }
+            const customCat = document.getElementById('custom-cat').value;
+            const cat = customCat || selectedCategory || (currentSystem === 'acc' ? '其他' : '');
 
-            const val = currentMode === 'decrease' ? -Math.abs(amount) : Math.abs(amount);
+            if (!item || !amount) { alert("請填寫內容與金額"); return; }
+            if (currentSystem === 'acc' && !cat) { alert("請選擇類別"); return; }
+
+            const val = (currentMode === 'decrease' || currentMode === 'expense') ? -Math.abs(amount) : Math.abs(amount);
             document.getElementById('btn-text').style.display = 'none';
             document.getElementById('btn-loader').style.display = 'block';
 
-            const payload = { action: 'record', mode: currentMode, item: item, val: val };
-            const params = new URLSearchParams({ payload: JSON.stringify(payload) });
+            let payload = { action: 'record', item: item, val: val };
+            if (currentSystem === 'acc') {
+                payload.mode = currentMode;
+                payload.cat = cat;
+            } else {
+                payload.mode = currentMode;
+            }
 
-            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
-                finishSubmit(item, val);
+            const params = new URLSearchParams({ payload: JSON.stringify(payload) });
+            const gasUrl = URLS[currentSystem];
+
+            fetch(`${gasUrl}?${params.toString()}`).then(r => r.json()).then(res => {
+                finishSubmit(item, val, cat);
             }).catch(err => {
-                // 容錯處理：即使 CORS 報錯，通常資料已寫入
-                finishSubmit(item, val);
+                finishSubmit(item, val, cat);
             });
         }
 
-        function finishSubmit(item, val) {
+        function finishSubmit(item, val, cat) {
             document.getElementById('btn-text').style.display = 'block';
             document.getElementById('btn-loader').style.display = 'none';
-            showToast("成功更新儲存金！", `${item}: ${val > 0 ? '+' : ''}${val}`);
+            const detail = currentSystem === 'acc' ? `[${cat}] ${item}: ${val > 0 ? '+' : ''}${val}` : `${item}: ${val > 0 ? '+' : ''}${val}`;
+            showToast("成功更新紀錄！", detail);
             clearForm();
         }
 
@@ -594,8 +689,9 @@
             const list = document.getElementById('summary-list');
             list.innerHTML = '<p style="text-align: center; color: #adb5bd;">讀取中...</p>';
             const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getSummary' }) });
+            const gasUrl = URLS[currentSystem];
 
-            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
+            fetch(`${gasUrl}?${params.toString()}`).then(r => r.json()).then(res => {
                 renderSummary(res.data);
             }).catch(e => {
                 list.innerHTML = '<p style="text-align: center; color: #fa5252;">讀取失敗，請檢查網路</p>';
@@ -610,33 +706,54 @@
             const actions = document.getElementById('summary-actions');
             const textContainer = document.getElementById('text-output-container');
             const sendBtn = document.getElementById('line-send-btn');
+            const balanceEl = document.getElementById('total-balance');
             
-            // 重置狀態
             textContainer.classList.remove('show');
             sendBtn.style.display = 'none';
             actions.style.display = 'block';
 
-            if (!data || !data.items || data.items.length === 0) {
+            if (!data || (Array.isArray(data) && data.length === 0) || (data.items && data.items.length === 0)) {
                 list.innerHTML = '<p style="text-align: center; color: #adb5bd;">今日尚無異動紀錄</p>';
-                actions.style.display = 'none'; // 沒資料就不顯示按鈕
+                actions.style.display = 'none';
+                balanceEl.style.display = 'none';
             } else {
-                list.innerHTML = data.items.map(d => `
-                    <div class="summary-item">
-                        <div class="info">
-                            <span style="font-weight:600; color:#495057;">${d.item}</span><br>
-                            <small style="color:#adb5bd;">${d.type}</small>
+                balanceEl.style.display = 'block';
+                if (currentSystem === 'savings') {
+                    list.innerHTML = data.items.map(d => `
+                        <div class="summary-item">
+                            <div class="info">
+                                <span style="font-weight:600; color:#495057;">${d.item}</span><br>
+                                <small style="color:#adb5bd;">${d.type}</small>
+                            </div>
+                            <div class="amt-text ${d.type === '收入' ? 'plus' : 'minus'}">
+                                ${d.type === '收入' ? '+' : '-'}${d.amount}
+                            </div>
                         </div>
-                        <div class="amt-text ${d.type === '收入' ? 'plus' : 'minus'}">
-                            ${d.type === '收入' ? '+' : '-'}${d.amount}
+                    `).join('');
+                    balanceEl.innerHTML = `總結存：<span style="color:var(--color-savings-sum)">$${data.balance || 0}</span>`;
+                } else {
+                    // Accounting system summary
+                    list.innerHTML = data.map(d => `
+                        <div class="summary-item">
+                            <div class="info">
+                                <span style="font-weight:600; color:#495057;">${d.item}</span><br>
+                                <small style="color:#adb5bd;">${d.cat}</small>
+                            </div>
+                            <div class="amt-text ${d.amt >= 0 ? 'plus' : 'minus'}">
+                                ${d.amt >= 0 ? '+' : ''}${d.amt}
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                    // Accounting backend doesn't return total balance in getSummary by default, 
+                    // we can just hide it or show empty if not available
+                    balanceEl.style.display = 'none';
+                    actions.style.display = 'none'; // Accounting text generation not requested yet
+                }
             }
-            document.getElementById('total-balance').innerHTML = `總結存：<span style="color:var(--secondary-summary)">$${data.balance || 0}</span>`;
         }
 
         function produceText() {
-            if (!lastLoadedData) return;
+            if (!lastLoadedData || currentSystem !== 'savings') return;
             const data = lastLoadedData;
             
             const summaryText = `📊 今日明細 (${data.date})\n` + 
