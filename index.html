@@ -139,6 +139,11 @@
             max-width: 500px;
             margin: 2rem auto;
             animation: slideUp 0.6s ease-out;
+            transition: opacity 0.3s ease;
+        }
+
+        #main-app.switching {
+            opacity: 0;
         }
 
         @keyframes slideUp {
@@ -407,7 +412,9 @@
 
     <!-- Auth Screen -->
     <div id="auth-screen">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🏦</div>
         <h1>儲存金管家</h1>
+        <p style="color: #adb5bd; font-size: 0.9rem; margin-bottom: 2rem;">V2.0 Integrated System</p>
         <div class="pin-input-group">
             <div class="pin-dot"></div>
             <div class="pin-dot"></div>
@@ -550,6 +557,24 @@
             if (hashed === HASHED_PIN_0) { unlockApp(); } else { alert("密碼錯誤"); clearPin(); }
         }
 
+        // 鍵盤支援 (電腦版專用)
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('auth-screen').style.display === 'none') return;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                appendPin(e.key);
+            } else if (e.key === 'Enter') {
+                checkPin();
+            } else if (e.key === 'Backspace') {
+                if (currentPin.length > 0) {
+                    currentPin = currentPin.slice(0, -1);
+                    updatePinDots();
+                }
+            } else if (e.key === 'Escape' || e.key.toLowerCase() === 'c') {
+                clearPin();
+            }
+        });
+
         function unlockApp() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
@@ -567,17 +592,23 @@
         }
 
         function switchSystem(sys) {
-            currentSystem = sys;
-            document.getElementById('app-title').innerText = sys === 'savings' ? '儲存金管家' : '今天開始記帳吧';
-            document.getElementById('sys-savings').classList.toggle('active', sys === 'savings');
-            document.getElementById('sys-acc').classList.toggle('active', sys === 'acc');
+            const app = document.getElementById('main-app');
+            app.classList.add('switching');
             
-            document.getElementById('nav-savings').style.display = sys === 'savings' ? 'grid' : 'none';
-            document.getElementById('nav-acc').style.display = sys === 'acc' ? 'grid' : 'none';
-            
-            document.getElementById('acc-categories').style.display = sys === 'acc' ? 'block' : 'none';
-            
-            setMode(sys === 'savings' ? 'increase' : 'expense');
+            setTimeout(() => {
+                currentSystem = sys;
+                document.getElementById('app-title').innerText = sys === 'savings' ? '儲存金管家' : '今天開始記帳吧';
+                document.getElementById('sys-savings').classList.toggle('active', sys === 'savings');
+                document.getElementById('sys-acc').classList.toggle('active', sys === 'acc');
+                
+                document.getElementById('nav-savings').style.display = sys === 'savings' ? 'grid' : 'none';
+                document.getElementById('nav-acc').style.display = sys === 'acc' ? 'grid' : 'none';
+                
+                document.getElementById('acc-categories').style.display = sys === 'acc' ? 'block' : 'none';
+                
+                setMode(sys === 'savings' ? 'increase' : 'expense');
+                app.classList.remove('switching');
+            }, 300);
         }
 
         function setMode(mode) {
