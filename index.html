@@ -24,7 +24,7 @@
             --color-acc-inc: #40c057; /* Green */
             --bg-acc-inc: #ebfbee;
             
-            --color-acc-dec: #339af0; /* Blue */
+            --color-acc-dec: #1971c2; /* Darker Blue */
             --bg-acc-dec: #e7f5ff;
             
             --color-acc-sum: #7950f2; /* Purple */
@@ -40,6 +40,7 @@
             --glass-light: rgba(255, 255, 255, 0.7);
             --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
         }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -357,10 +358,24 @@
         }
 
         .sys-btn {
-            background: white; border: none; padding: 6px 12px; border-radius: 20px;
-            font-size: 0.8rem; font-weight: 700; color: #adb5bd; cursor: pointer; transition: var(--transition);
+            background: rgba(255, 255, 255, 0.4);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #adb5bd;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
-        .sys-btn.active { background: #495057; color: white; }
+        .sys-btn.active {
+            background: white;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
 
         .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
         .cat-btn {
@@ -439,15 +454,12 @@
     <!-- Main App -->
     <div id="main-app">
         <div class="sticky-header">
-            <header>
-                <div style="display: flex; flex-direction: column;">
-                    <h1 id="app-title" style="font-size: 1.5rem;">儲存金管家</h1>
-                    <div id="system-selector" style="display: flex; gap: 8px; margin-top: 8px;">
-                        <button class="sys-btn active" id="sys-savings" onclick="switchSystem('savings')">儲存金</button>
-                        <button class="sys-btn" id="sys-acc" onclick="switchSystem('acc')">每日記帳</button>
-                    </div>
+            <header style="margin-bottom: 2rem;">
+                <div id="system-selector" style="display: flex; gap: 12px; width: 100%;">
+                    <button class="sys-btn active" id="sys-savings" onclick="switchSystem('savings')">儲存金</button>
+                    <button class="sys-btn" id="sys-acc" onclick="switchSystem('acc')">每日記帳</button>
                 </div>
-                <a id="sheet-btn" href="#" target="_blank" class="sheet-link">📊 Sheet</a>
+                <a id="sheet-btn" href="#" target="_blank" class="sheet-link" style="margin-left: 10px; padding: 12px; border-radius: 15px;">📊</a>
             </header>
 
             <nav id="nav-savings" class="nav-tabs">
@@ -467,14 +479,14 @@
             <div id="acc-categories" style="display: none; margin-bottom: 1.5rem;">
                 <p style="font-weight: 700; margin-bottom: 1rem; font-size: 0.9rem; color: #868e96;">選擇類別</p>
                 <div id="cat-grid-expense" class="cat-grid">
-                    <button class="cat-btn" onclick="selectCat('飲食', this)">飲食</button>
+                    <button id="default-cat-expense" class="cat-btn" onclick="selectCat('飲食', this)">飲食</button>
                     <button class="cat-btn" onclick="selectCat('交通', this)">交通</button>
                     <button class="cat-btn" onclick="selectCat('娛樂', this)">娛樂</button>
                     <button class="cat-btn" onclick="selectCat('月費', this)">月費</button>
                     <button class="cat-btn" onclick="selectCat('其他', this)">其他</button>
                 </div>
                 <div id="cat-grid-income" class="cat-grid" style="display: none;">
-                    <button class="cat-btn" onclick="selectCat('薪資', this)">薪資</button>
+                    <button id="default-cat-income" class="cat-btn" onclick="selectCat('薪資', this)">薪資</button>
                     <button class="cat-btn" onclick="selectCat('投資', this)">投資</button>
                     <button class="cat-btn" onclick="selectCat('其他', this)">其他</button>
                 </div>
@@ -596,7 +608,6 @@
             
             setTimeout(() => {
                 currentSystem = sys;
-                document.getElementById('app-title').innerText = sys === 'savings' ? '儲存金管家' : '今天開始記帳吧';
                 document.getElementById('sys-savings').classList.toggle('active', sys === 'savings');
                 document.getElementById('sys-acc').classList.toggle('active', sys === 'acc');
                 
@@ -649,8 +660,21 @@
             submitBtn.style.background = themeColor;
             submitBtn.style.boxShadow = `0 10px 25px ${themeColor}4D`;
 
-            if (isSummary) loadSummary();
-            clearForm();
+            if (isSummary) {
+                loadSummary();
+            } else {
+                clearForm();
+                // 設定預設類別 (自動跳回)
+                if (currentSystem === 'acc') {
+                    if (mode === 'expense') {
+                        const btn = document.getElementById('default-cat-expense');
+                        if (btn) selectCat('飲食', btn);
+                    } else if (mode === 'income') {
+                        const btn = document.getElementById('default-cat-income');
+                        if (btn) selectCat('薪資', btn);
+                    }
+                }
+            }
         }
 
         function selectCat(cat, btn) {
@@ -712,7 +736,8 @@
             document.getElementById('btn-loader').style.display = 'none';
             const detail = currentSystem === 'acc' ? `[${cat}] ${item}: ${val > 0 ? '+' : ''}${val}` : `${item}: ${val > 0 ? '+' : ''}${val}`;
             showToast("成功更新紀錄！", detail);
-            clearForm();
+            // 提交後重新初始化模式，確保類別跳回預設
+            setMode(currentMode);
         }
 
         function loadSummary() {
