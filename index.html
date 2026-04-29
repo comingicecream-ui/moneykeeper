@@ -540,10 +540,8 @@
 
     <script>
         // ================= CONFIGURATION =================
-        const URLS = {
-            savings: "https://script.google.com/macros/s/AKfycbw2gnJYvmbTiMd69JnV-8OWZuHRvZASPO3UwlG05C7rceH05fMDOOtAVKcy7qKdou0k/exec",
-            acc: "https://script.google.com/macros/s/AKfycbxYgyXd9qQ_D0B3nNeqPbs9eykQLzVtbGDDm3130Ly0IZn_SbiCNWyZv3Dc7azBkaeF/exec"
-        };
+        // 請在此處貼上您部署「合併版」GAS 後取得的網頁應用程式網址
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw2gnJYvmbTiMd69JnV-8OWZuHRvZASPO3UwlG05C7rceH05fMDOOtAVKcy7qKdou0k/exec";
         // =================================================
 
         let currentPin = "";
@@ -594,12 +592,10 @@
         }
 
         function initApp() {
-            Object.keys(URLS).forEach(sys => {
-                const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getUrl' }) });
-                fetch(`${URLS[sys]}?${params.toString()}`).then(r => r.json()).then(res => {
-                    if (sys === currentSystem && res.data) document.getElementById('sheet-btn').href = res.data;
-                });
-            });
+            const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getUrl' }) });
+            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
+                if (res.data) document.getElementById('sheet-btn').href = res.data;
+            }).catch(e => console.log("Init fail"));
         }
 
         function switchSystem(sys) {
@@ -722,9 +718,8 @@
             }
 
             const params = new URLSearchParams({ payload: JSON.stringify(payload) });
-            const gasUrl = URLS[currentSystem];
 
-            fetch(`${gasUrl}?${params.toString()}`).then(r => r.json()).then(res => {
+            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
                 finishSubmit(item, val, cat);
             }).catch(err => {
                 finishSubmit(item, val, cat);
@@ -743,10 +738,9 @@
         function loadSummary() {
             const list = document.getElementById('summary-list');
             list.innerHTML = '<p style="text-align: center; color: #adb5bd;">讀取中...</p>';
-            const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getSummary' }) });
-            const gasUrl = URLS[currentSystem];
+            const params = new URLSearchParams({ payload: JSON.stringify({ action: 'getSummary', system: currentSystem }) });
 
-            fetch(`${gasUrl}?${params.toString()}`).then(r => r.json()).then(res => {
+            fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
                 renderSummary(res.data);
             }).catch(e => {
                 list.innerHTML = '<p style="text-align: center; color: #fa5252;">讀取失敗，請檢查網路</p>';
