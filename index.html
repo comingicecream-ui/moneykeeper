@@ -10,35 +10,37 @@
         rel="stylesheet">
     <style>
         :root {
-            /* 儲存金管家 (Savings) */
-            --color-savings-inc: #ff922b; /* Orange */
-            --bg-savings-inc: #fff4e6;
+            /* 儲存金管家 (Savings) - Premium Palettes */
+            --color-savings-inc: #ff922b;
+            --bg-savings-inc: linear-gradient(135deg, #fff4e6 0%, #ffe8cc 100%);
             
-            --color-savings-dec: #fa5252; /* Red */
-            --bg-savings-dec: #fff5f5;
+            --color-savings-dec: #fa5252;
+            --bg-savings-dec: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
             
-            --color-savings-sum: #fcc419; /* Yellow */
-            --bg-savings-sum: #fff9db;
+            --color-savings-sum: #fcc419;
+            --bg-savings-sum: linear-gradient(135deg, #fff9db 0%, #ffec99 100%);
             
             /* 今天開始記帳吧 (Accounting) */
-            --color-acc-inc: #40c057; /* Green */
-            --bg-acc-inc: #ebfbee;
+            --color-acc-inc: #40c057;
+            --bg-acc-inc: linear-gradient(135deg, #ebfbee 0%, #d3f9d8 100%);
             
-            --color-acc-dec: #1971c2; /* Darker Blue */
-            --bg-acc-dec: #e7f5ff;
+            --color-acc-dec: #1971c2;
+            --bg-acc-dec: linear-gradient(135deg, #e7f5ff 0%, #d0ebff 100%);
             
-            --color-acc-sum: #7950f2; /* Purple */
-            --bg-acc-sum: #f3f0ff;
+            --color-acc-sum: #7950f2;
+            --bg-acc-sum: linear-gradient(135deg, #f3f0ff 0%, #e5dbff 100%);
             
-            --bg-auth: #f8f9fa;
-            --primary-auth: #495057;
-            --text-dark: #2d3436;
+            --bg-auth: #f1f3f5;
+            --primary-auth: #343a40;
+            --text-dark: #1a1a1a;
             --text-light: #ffffff;
 
-            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            --glass-dark: rgba(255, 255, 255, 0.85);
-            --glass-light: rgba(255, 255, 255, 0.7);
-            --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            --glass-dark: rgba(255, 255, 255, 0.9);
+            --glass-light: rgba(255, 255, 255, 0.75);
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+            --radius-lg: 2rem;
+            --radius-sm: 1.2rem;
         }
 
         * {
@@ -128,8 +130,55 @@
         }
 
         .num-btn:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.92);
+            background: #f8f9fa;
+        }
+
+        /* Card & Input Refinement */
+        .card {
+            background: var(--glass-light);
+            backdrop-filter: blur(25px);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin-bottom: 2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1.2rem;
+            border-radius: var(--radius-sm);
+            border: 2px solid #e9ecef;
+            font-size: 1.1rem;
+            outline: none;
+            transition: var(--transition);
+            background: white;
+        }
+
+        input:focus {
+            border-color: currentColor;
+            background: #fff;
+            box-shadow: 0 0 0 5px rgba(0,0,0,0.03);
+        }
+
+        .sys-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border: none;
+            padding: 1.2rem;
+            border-radius: var(--radius-sm);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #868e96;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+        }
+        .sys-btn.active {
+            background: white;
+            color: var(--text-dark);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
         }
 
         /* --- Main App --- */
@@ -138,7 +187,7 @@
             width: 95%;
             max-width: 500px;
             margin: 2rem auto;
-            animation: slideUp 0.6s ease-out;
+            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             transition: opacity 0.3s ease;
         }
 
@@ -151,7 +200,6 @@
                 opacity: 0;
                 transform: translateY(40px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -171,16 +219,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        body.mode-auth header h1 {
-            color: var(--text-light);
         }
 
         .sheet-link {
@@ -215,31 +253,6 @@
             box-shadow: var(--shadow);
         }
 
-        .nav-btn.active[data-mode="increase"] {
-            background: var(--primary-increase);
-            color: white;
-        }
-
-        .nav-btn.active[data-mode="decrease"] {
-            background: var(--primary-decrease);
-            color: white;
-        }
-
-        .nav-btn.active[data-mode="summary"] {
-            background: var(--primary-summary);
-            color: white;
-        }
-
-        /* Form */
-        .card {
-            background: var(--glass-light);
-            backdrop-filter: blur(15px);
-            padding: 2.5rem;
-            border-radius: 2.5rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
-
         .input-group {
             margin-bottom: 1.8rem;
         }
@@ -252,46 +265,25 @@
             color: #495057;
         }
 
-        input {
-            width: 100%;
-            padding: 1.2rem;
-            border-radius: 1.2rem;
-            border: 2px solid transparent;
-            font-size: 1.1rem;
-            outline: none;
-            transition: var(--transition);
-            background: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-        }
-
-        input:focus {
-            border-color: var(--primary-increase);
-            box-shadow: 0 0 0 6px rgba(250, 176, 5, 0.1);
-        }
-
         .submit-btn {
             width: 100%;
             padding: 1.4rem;
             border-radius: 1.5rem;
             border: none;
-            background: var(--primary-increase);
+            background: var(--color-acc-inc);
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
-            box-shadow: 0 10px 25px rgba(250, 176, 5, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
         .submit-btn:active {
             transform: scale(0.97);
         }
 
-        /* Summary */
-        #summary-content {
-            display: none;
-        }
-
+        /* Summary & Toast */
         .summary-item {
             background: white;
             padding: 1.2rem;
@@ -307,14 +299,8 @@
             font-weight: 800;
             font-size: 1.1rem;
         }
-
-        .amt-text.plus {
-            color: #40c057;
-        }
-
-        .amt-text.minus {
-            color: #fa5252;
-        }
+        .amt-text.plus { color: #40c057; }
+        .amt-text.minus { color: #fa5252; }
 
         #feedback-toast {
             position: fixed;
@@ -338,8 +324,8 @@
 
         .loader {
             display: none;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid currentColor;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -348,33 +334,8 @@
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .sys-btn {
-            background: rgba(255, 255, 255, 0.4);
-            border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 1.5rem;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #adb5bd;
-            cursor: pointer;
-            transition: var(--transition);
-            flex: 1;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .sys-btn.active {
-            background: white;
-            color: var(--text-dark);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
@@ -456,8 +417,8 @@
         <div class="sticky-header">
             <header style="margin-bottom: 2rem;">
                 <div id="system-selector" style="display: flex; gap: 12px; width: 100%;">
-                    <button class="sys-btn active" id="sys-savings" onclick="switchSystem('savings')">儲存金</button>
-                    <button class="sys-btn" id="sys-acc" onclick="switchSystem('acc')">每日記帳</button>
+                    <button class="sys-btn active" id="sys-acc" onclick="switchSystem('acc')">每日記帳</button>
+                    <button class="sys-btn" id="sys-savings" onclick="switchSystem('savings')">儲存金</button>
                 </div>
                 <a id="sheet-btn" href="#" target="_blank" class="sheet-link" style="margin-left: 10px; padding: 12px; border-radius: 15px;">📊</a>
             </header>
@@ -505,6 +466,18 @@
                 <span id="btn-text">確認紀錄</span>
                 <div class="loader" id="btn-loader"></div>
             </button>
+
+            <!-- 支出同步按鈕 -->
+            <div id="sync-buttons" style="display: none; margin-top: 1.2rem; gap: 12px;">
+                <button class="submit-btn" style="background: var(--color-savings-inc); box-shadow: 0 10px 25px rgba(255, 146, 43, 0.2);" onclick="submitRecord('increase')">
+                    <span style="font-size: 0.8rem; opacity: 0.8; display: block; font-weight: 400;">同步增加儲存金</span>
+                    增加
+                </button>
+                <button class="submit-btn" style="background: var(--color-savings-dec); box-shadow: 0 10px 25px rgba(250, 82, 82, 0.2);" onclick="submitRecord('decrease')">
+                    <span style="font-size: 0.8rem; opacity: 0.8; display: block; font-weight: 400;">同步減少儲存金</span>
+                    減少
+                </button>
+            </div>
         </div>
 
         <div id="summary-content">
@@ -587,7 +560,7 @@
         function unlockApp() {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            switchSystem('savings');
+            switchSystem('acc');
             initApp();
         }
 
@@ -647,6 +620,11 @@
             document.getElementById('record-form').style.display = isSummary ? 'none' : 'block';
             document.getElementById('summary-content').style.display = isSummary ? 'block' : 'none';
 
+            // 支出同步按鈕邏輯
+            const isAccExpense = (currentSystem === 'acc' && mode === 'expense');
+            document.getElementById('submit-btn').style.display = isAccExpense ? 'none' : 'block';
+            document.getElementById('sync-buttons').style.display = isAccExpense ? 'flex' : 'none';
+
             if (currentSystem === 'acc') {
                 document.getElementById('cat-grid-expense').style.display = mode === 'expense' ? 'grid' : 'none';
                 document.getElementById('cat-grid-income').style.display = mode === 'income' ? 'grid' : 'none';
@@ -696,7 +674,7 @@
             setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
-        async function submitRecord() {
+        async function submitRecord(syncSavingsMode = '') {
             const item = document.getElementById('item-name').value;
             const amount = document.getElementById('amount').value;
             const customCat = document.getElementById('custom-cat').value;
@@ -706,10 +684,18 @@
             if (currentSystem === 'acc' && !cat) { alert("請選擇類別"); return; }
 
             const val = (currentMode === 'decrease' || currentMode === 'expense') ? -Math.abs(amount) : Math.abs(amount);
+            
+            // 處理載入狀態 (如果有同步按鈕，也要處理，這裡簡單處理主按鈕)
             document.getElementById('btn-text').style.display = 'none';
             document.getElementById('btn-loader').style.display = 'block';
 
-            let payload = { action: 'record', item: item, val: val };
+            let payload = { 
+                action: 'record', 
+                item: item, 
+                val: val,
+                syncSavingsMode: syncSavingsMode 
+            };
+            
             if (currentSystem === 'acc') {
                 payload.mode = currentMode;
                 payload.cat = cat;
@@ -720,18 +706,22 @@
             const params = new URLSearchParams({ payload: JSON.stringify(payload) });
 
             fetch(`${GAS_URL}?${params.toString()}`).then(r => r.json()).then(res => {
-                finishSubmit(item, val, cat);
+                finishSubmit(item, val, cat, syncSavingsMode);
             }).catch(err => {
-                finishSubmit(item, val, cat);
+                finishSubmit(item, val, cat, syncSavingsMode);
             });
         }
 
-        function finishSubmit(item, val, cat) {
+        function finishSubmit(item, val, cat, syncSavingsMode) {
             document.getElementById('btn-text').style.display = 'block';
             document.getElementById('btn-loader').style.display = 'none';
-            const detail = currentSystem === 'acc' ? `[${cat}] ${item}: ${val > 0 ? '+' : ''}${val}` : `${item}: ${val > 0 ? '+' : ''}${val}`;
+            
+            let detail = currentSystem === 'acc' ? `[${cat}] ${item}: ${val > 0 ? '+' : ''}${val}` : `${item}: ${val > 0 ? '+' : ''}${val}`;
+            if (syncSavingsMode) {
+                detail += ` (同步${syncSavingsMode === 'increase' ? '增加' : '減少'}儲存金)`;
+            }
+            
             showToast("成功更新紀錄！", detail);
-            // 提交後重新初始化模式，確保類別跳回預設
             setMode(currentMode);
         }
 
