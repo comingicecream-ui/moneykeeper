@@ -65,7 +65,7 @@
 
         /* 登入後的佈局調整 */
         body.is-logged-in {
-            padding-top: 180px; /* 登入後為固定標題留出空間 */
+            padding-top: 210px; /* 增加空間，避免固定標題蓋住內容 */
         }
 
         /* 主題顏色應用 */
@@ -222,9 +222,10 @@
             width: 95%;
             max-width: 500px;
             z-index: 1000;
-            padding: 1.5rem 0 1rem 0;
+            padding: 1.5rem 0 1.2rem 0;
             background: var(--bg-auth);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1); /* 增加微弱陰影區隔 */
             transition: var(--transition);
         }
 
@@ -477,7 +478,7 @@
     <!-- Main App -->
     <div id="main-app">
         <div class="sticky-header">
-            <header style="margin-bottom: 2rem;">
+            <header style="margin-bottom: 1.2rem;">
                 <div id="system-selector" style="display: flex; gap: 12px; width: 100%;">
                     <button class="sys-btn active" id="sys-acc" onclick="switchSystem('acc')">每日記帳</button>
                     <button class="sys-btn" id="sys-savings" onclick="switchSystem('savings')">儲存金</button>
