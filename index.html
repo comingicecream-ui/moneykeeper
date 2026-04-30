@@ -65,7 +65,7 @@
 
         /* 登入後的佈局調整 */
         body.is-logged-in {
-            padding-top: 210px; /* 增加空間，避免固定標題蓋住內容 */
+            padding-top: 1rem; /* 恢復正常間距 */
         }
 
         /* 主題顏色應用 */
@@ -215,18 +215,15 @@
         }
 
         .sticky-header {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 95%;
-            max-width: 500px;
             z-index: 1000;
             padding: 1.5rem 0 1.2rem 0;
             background: var(--bg-auth);
             backdrop-filter: blur(20px);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1); /* 增加微弱陰影區隔 */
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
             transition: var(--transition);
+            margin-top: -1rem; /* 抵消 main-app 的部分 margin 使其貼頂 */
         }
 
         header {
