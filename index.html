@@ -57,38 +57,42 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding-top: 2rem;
+            justify-content: flex-start; /* 改為靠上對齊 */
+            padding-top: 1.5rem; /* 登入前的頂部間距 */
             transition: var(--transition);
             overflow-x: hidden;
         }
 
+        /* 登入後的佈局調整 */
+        body.is-logged-in {
+            padding-top: 180px; /* 登入後為固定標題留出空間 */
+        }
+
         /* 主題顏色應用 */
-        body.mode-savings-increase { background-color: var(--bg-savings-inc); }
-        body.mode-savings-decrease { background-color: var(--bg-savings-dec); }
-        body.mode-savings-summary  { background-color: var(--bg-savings-sum); }
-        body.mode-acc-income       { background-color: var(--bg-acc-inc); }
-        body.mode-acc-expense      { background-color: var(--bg-acc-dec); }
-        body.mode-acc-summary      { background-color: var(--bg-acc-sum); }
+        body.mode-savings-increase, body.mode-savings-increase .sticky-header { background: var(--bg-savings-inc); }
+        body.mode-savings-decrease, body.mode-savings-decrease .sticky-header { background: var(--bg-savings-dec); }
+        body.mode-savings-summary, body.mode-savings-summary .sticky-header  { background: var(--bg-savings-sum); }
+        body.mode-acc-income, body.mode-acc-income .sticky-header       { background: var(--bg-acc-inc); }
+        body.mode-acc-expense, body.mode-acc-expense .sticky-header      { background: var(--bg-acc-dec); }
+        body.mode-acc-summary, body.mode-acc-summary .sticky-header      { background: var(--bg-acc-sum); }
 
         /* --- Auth Screen --- */
         #auth-screen {
             background: var(--glass-dark);
             backdrop-filter: blur(20px);
-            padding: 3.5rem 2.5rem;
+            padding: 1rem 1.5rem; /* 再度縮小內距 */
             border-radius: 2.5rem;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
             text-align: center;
             width: 90%;
-            max-width: 400px;
+            max-width: 380px;
             color: var(--text-dark);
-            margin-top: 10vh;
         }
 
         #auth-screen h1 {
             color: var(--primary-auth);
-            margin-bottom: 2rem;
-            font-size: 2rem;
+            margin-bottom: 0.5rem; /* 縮小間距 */
+            font-size: 1.6rem; /* 縮小標題 */
             letter-spacing: 2px;
             font-weight: 600;
         }
@@ -97,7 +101,7 @@
             display: flex;
             gap: 12px;
             justify-content: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem; /* 縮小間距 */
         }
 
         .pin-dot {
@@ -116,15 +120,15 @@
         .numpad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+            gap: 10px; /* 縮小間隙 */
         }
 
         .num-btn {
             background: white;
             border: 1px solid #eee;
-            padding: 1.5rem;
+            padding: 0.6rem; /* 按鈕高度砍半 */
             border-radius: 1.2rem;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: var(--text-dark);
             cursor: pointer;
@@ -211,11 +215,16 @@
         }
 
         .sticky-header {
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 500px;
             z-index: 1000;
-            padding: 1rem 0;
-            background: inherit;
+            padding: 1.5rem 0 1rem 0;
+            background: var(--bg-auth);
+            backdrop-filter: blur(10px);
             transition: var(--transition);
         }
 
@@ -493,7 +502,7 @@
             <div id="acc-categories" style="display: none; margin-bottom: 1.5rem;">
                 <p style="font-weight: 700; margin-bottom: 1rem; font-size: 0.9rem; color: #868e96;">選擇類別</p>
                 <div id="cat-grid-expense" class="cat-grid">
-                    <button class="cat-btn" onclick="selectCat('飲食', this)">飲食</button>
+                    <button id="default-cat-expense" class="cat-btn" onclick="selectCat('飲食', this)">飲食</button>
                     <button class="cat-btn" onclick="selectCat('交通', this)">交通</button>
                     <button class="cat-btn" onclick="selectCat('娛樂', this)">娛樂</button>
                     <button class="cat-btn" onclick="selectCat('月費', this)">月費</button>
@@ -503,7 +512,7 @@
                     </div>
                 </div>
                 <div id="cat-grid-income" class="cat-grid" style="display: none;">
-                    <button class="cat-btn" onclick="selectCat('薪資', this)">薪資</button>
+                    <button id="default-cat-income" class="cat-btn" onclick="selectCat('薪資', this)">薪資</button>
                     <button class="cat-btn" onclick="selectCat('投資', this)">投資</button>
                     <button class="cat-btn" onclick="selectCat('其他', this)">其他</button>
                     <div style="position: relative;">
@@ -614,6 +623,7 @@
         });
 
         function unlockApp() {
+            document.body.classList.add('is-logged-in'); // 加入登入狀態
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             switchSystem('acc');
